@@ -33,7 +33,6 @@
 #include "Instance.h"
 
 #include "OrthancConnection.h"
-#include "../Core/OrthancException.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -63,16 +62,16 @@ namespace OrthancClient
           break;
           
         default:
-          throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented);
+          throw OrthancClientException(Orthanc::ErrorCode_NotImplemented);
       }
 
       Orthanc::HttpClient client(connection_.GetHttpClient());
-      client.SetUrl(connection_.GetOrthancUrl() +  "/instances/" + id_ + "/" + suffix);
+      client.SetUrl(std::string(connection_.GetOrthancUrl()) +  "/instances/" + id_ + "/" + suffix);
       std::string png;
 
       if (!client.Apply(png))
       {
-        throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented);
+        throw OrthancClientException(Orthanc::ErrorCode_NotImplemented);
       }
      
       reader_.reset(new Orthanc::PngReader);
@@ -81,34 +80,34 @@ namespace OrthancClient
   }
 
   Instance::Instance(const OrthancConnection& connection,
-                     const std::string& id) :
+                     const char* id) :
     connection_(connection),
     id_(id),
     mode_(Orthanc::ImageExtractionMode_Int16)
   {
     Orthanc::HttpClient client(connection_.GetHttpClient());
             
-    client.SetUrl(connection_.GetOrthancUrl() + "/instances/" + id_ + "/simplified-tags");
+    client.SetUrl(std::string(connection_.GetOrthancUrl()) + "/instances/" + id_ + "/simplified-tags");
     Json::Value v;
     if (!client.Apply(tags_))
     {
-      throw Orthanc::OrthancException(Orthanc::ErrorCode_NetworkProtocol);
+      throw OrthancClientException(Orthanc::ErrorCode_NetworkProtocol);
     }
   }
 
-  std::string Instance::GetTagAsString(const char* tag)
+  const char* Instance::GetTagAsString(const char* tag) const
   {
     if (tags_.isMember(tag))
     {
-      return tags_[tag].asString();
+      return tags_[tag].asCString();
     }
     else
     {
-      throw Orthanc::OrthancException(Orthanc::ErrorCode_InexistentItem);
+      throw OrthancClientException(Orthanc::ErrorCode_InexistentItem);
     }
   }
 
-  float Instance::GetTagAsFloat(const char* tag)
+  float Instance::GetTagAsFloat(const char* tag) const
   {
     std::string value = GetTagAsString(tag);
 
@@ -118,11 +117,11 @@ namespace OrthancClient
     }
     catch (boost::bad_lexical_cast)
     {
-      throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
+      throw OrthancClientException(Orthanc::ErrorCode_BadFileFormat);
     }
   }
 
-  int Instance::GetTagAsInt(const char* tag)
+  int Instance::GetTagAsInt(const char* tag) const
   {
     std::string value = GetTagAsString(tag);
 
@@ -132,7 +131,7 @@ namespace OrthancClient
     }
     catch (boost::bad_lexical_cast)
     {
-      throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
+      throw OrthancClientException(Orthanc::ErrorCode_BadFileFormat);
     }
   }
 
@@ -218,7 +217,7 @@ namespace OrthancClient
     catch (boost::bad_lexical_cast)
     {
       // Unable to parse the Image Orientation Patient.
-      throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
+      throw OrthancClientException(Orthanc::ErrorCode_BadFileFormat);
     }
   }
 }

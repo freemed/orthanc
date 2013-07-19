@@ -32,54 +32,27 @@
 
 #pragma once
 
-#include "Study.h"
+#include "../Core/OrthancException.h"
+#include "Package/Laaw/laaw.h"
 
 namespace OrthancClient
 {
-  class LAAW_API Patient : 
-    public Orthanc::IDynamicObject, 
-    private Orthanc::ArrayFilledByThreads::IFiller
+  class OrthancClientException : public ::Laaw::LaawException
   {
-  private:
-    const OrthancConnection& connection_;
-    std::string id_;
-    Json::Value patient_;
-    Orthanc::ArrayFilledByThreads  studies_;
-
-    void ReadPatient();
-
-    virtual size_t GetFillerSize()
-    {
-      return patient_["Studies"].size();
-    }
-
-    virtual Orthanc::IDynamicObject* GetFillerItem(size_t index);
-
   public:
-    Patient(const OrthancConnection& connection,
-            const char* id);
-
-    void Reload()
-    {
-      studies_.Reload();
+    OrthancClientException(Orthanc::ErrorCode code) :
+      LaawException(Orthanc::OrthancException::GetDescription(code))
+    { 
     }
 
-    uint32_t GetStudyCount()
-    {
-      return studies_.GetSize();
+    OrthancClientException(const char* message) : 
+      LaawException(message)
+    {    
     }
 
-    Study& GetStudy(uint32_t index)
-    {
-      return dynamic_cast<Study&>(studies_.GetItem(index));
+    OrthancClientException(const std::string& message) : 
+      LaawException(message)
+    {    
     }
-
-    const char* GetId() const
-    {
-      return id_.c_str();
-    }
-
-    const char* GetMainDicomTag(const char* tag, 
-                                const char* defaultValue) const;
   };
 }
