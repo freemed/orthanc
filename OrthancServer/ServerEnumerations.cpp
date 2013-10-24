@@ -33,6 +33,7 @@
 
 #include "../Core/OrthancException.h"
 #include "../Core/EnumerationDictionary.h"
+#include "../Core/Toolbox.h"
 
 #include <boost/thread.hpp>
 
@@ -80,27 +81,6 @@ namespace Orthanc
   {
     boost::mutex::scoped_lock lock(enumerationsMutex_);
     return dictMetadataType_.Translate(str);
-  }
-
-  const char* EnumerationToString(ResourceType type)
-  {
-    switch (type)
-    {
-      case ResourceType_Patient:
-        return "Patient";
-
-      case ResourceType_Study:
-        return "Study";
-
-      case ResourceType_Series:
-        return "Series";
-
-      case ResourceType_Instance:
-        return "Instance";
-      
-      default:
-        throw OrthancException(ErrorCode_ParameterOutOfRange);
-    }
   }
 
   std::string GetBasePath(ResourceType type,
@@ -289,6 +269,4 @@ namespace Orthanc
       throw OrthancException(ErrorCode_ParameterOutOfRange);
     }
   }
-
-
 }
